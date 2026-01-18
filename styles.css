@@ -1157,3 +1157,165 @@ body {
     color: var(--accent-color);
     font-weight: bold;
 }
+
+/* --- Glassmorphism Utils --- */
+.glass-panel {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+}
+
+/* --- Media Library Styles (Redesign) --- */
+.media-container {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    max-width: 100%;
+    height: calc(100vh - 180px);
+    /* Fill available height */
+}
+
+/* Big Drag & Drop Area */
+.drop-zone {
+    flex: 2;
+    /* Takes up more space */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border: 2px dashed rgba(41, 98, 255, 0.3);
+    border-radius: 20px;
+
+    /* Glass Effect */
+    background: rgba(10, 15, 30, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.drop-zone:hover,
+.drop-zone.dragover {
+    border-color: var(--teal);
+    background: rgba(41, 98, 255, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px 0 rgba(41, 98, 255, 0.15);
+}
+
+.drop-zone i {
+    font-size: 5rem;
+    color: rgba(255, 255, 255, 0.3);
+    margin-bottom: 25px;
+    transition: all 0.3s ease;
+    filter: drop-shadow(0 0 10px rgba(41, 98, 255, 0.2));
+}
+
+.drop-zone:hover i,
+.drop-zone.dragover i {
+    color: var(--teal);
+    transform: scale(1.1);
+}
+
+.drop-zone p {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: white;
+    letter-spacing: -0.02em;
+}
+
+.drop-zone .small-text {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 6px 12px;
+    border-radius: 20px;
+}
+
+/* Input Area (Bottom Bar) */
+.media-input-area {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    padding: 20px 30px;
+    border-radius: 20px;
+
+    /* Glass Effect */
+    background: rgba(10, 15, 30, 0.7);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+}
+
+.media-input-area .input-group {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.media-input-area input {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    height: 50px;
+    font-size: 1.05rem;
+}
+
+.media-input-area input:focus {
+    background: rgba(0, 0, 0, 0.4);
+    border-color: var(--teal);
+}
+
+/* Gallery (Below or integrated, user asked for Input "below" Drop zone) */
+/* Let's make the gallery appear sideways or simply below for now, but keeping glass style */
+.media-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 15px;
+    margin-top: 10px;
+    max-height: 200px;
+    /* Limit height if we want to keep it compact, or expand */
+    overflow-y: auto;
+    padding-right: 10px;
+
+    /* Scrollbar styling */
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent-color) transparent;
+}
+
+.media-gallery::-webkit-scrollbar {
+    width: 6px;
+}
+
+.media-gallery::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.media-gallery::-webkit-scrollbar-thumb {
+    background-color: var(--accent-color);
+    border-radius: 20px;
+}
+
+.media-item {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    aspect-ratio: 1;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.02);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+/* Sidebar Glass Update */
+.sidebar {
+    background: rgba(5, 5, 8, 0.6);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+}

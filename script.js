@@ -774,6 +774,251 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
+    // --- Media Library Logic ---
+    const dropZone = document.getElementById('drop-zone');
+    const fileUpload = document.getElementById('file-upload');
+    const mediaDescInput = document.getElementById('media-description');
+    const btnSaveMedia = document.getElementById('btn-save-media');
+    const mediaGallery = document.getElementById('media-gallery');
+    const suggestionsList = document.getElementById('prompt-suggestions');
+
+    let pendingFiles = [];
+
+    // Drag & Drop Events
+    if (dropZone) {
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight(e) {
+            dropZone.classList.add('dragover');
+        }
+
+        function unhighlight(e) {
+            dropZone.classList.remove('dragover');
+        }
+
+        dropZone.addEventListener('drop', handleDrop, false);
+        dropZone.addEventListener('click', () => fileUpload.click());
+    }
+
+    if (fileUpload) {
+        fileUpload.addEventListener('change', (e) => handleFiles(e.target.files));
+    }
+
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        handleFiles(files);
+    }
+
+    function handleFiles(files) {
+        if (!currentUser) {
+            showAuthModal();
+            return;
+        }
+
+        pendingFiles = [...files];
+        if (pendingFiles.length > 0) {
+            // Visual feedback
+            const count = pendingFiles.length;
+            dropZone.innerHTML = `
+                <i class="fas fa-check-circle" style="color: var(--teal);"></i>
+                <p>${count} arquivo(s) selecionado(s)</p>
+                <span class="small-text">Adicione uma descrição e clique em Salvar</span>
+            `;
+            btnSaveMedia.disabled = false;
+        }
+    }
+
+    // Save Media
+    if (btnSaveMedia) {
+        btnSaveMedia.addEventListener('click', async () => {
+            if (pendingFiles.length === 0 || !currentUser) return;
+
+            const description = mediaDescInput.value.trim();
+            if (!description) {
+                alert('Por favor, adicione uma descrição ou contexto.');
+                return;
+            }
+
+            const originalText = btnSaveMedia.innerHTML;
+            btnSaveMedia.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+            btnSaveMedia.disabled = true;
+
+            try {
+                const uploadedUrls = [];
+
+                // 1. Upload Files
+                for (const file of pendingFiles) {
+                    const fileExt = file.name.split('.').pop();
+                    const fileName = `${currentUser.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+
+                    const { error: uploadError } = await supabaseClient
+                        .storage
+                        .from('media-library')
+                        .upload(fileName, file);
+
+                    if (uploadError) throw uploadError;
+
+                    // Get Public URL
+                    const { data: { publicUrl } } = supabaseClient
+                        .storage
+                        .from('media-library')
+                        .getPublicUrl(fileName);
+
+                    uploadedUrls.push(publicUrl);
+
+                    // 2. Save Metadata
+                    const { error: dbError } = await supabaseClient
+                        .from('media_items')
+                        .insert({
+                            user_id: currentUser.id,
+                            url: publicUrl,
+                            description: description
+                        });
+
+                    if (dbError) throw dbError;
+                }
+
+                // 3. Save Suggestion logic (Smart Auto-complete)
+                // Check if exists
+                const { data: existing } = await supabaseClient
+                    .from('prompt_suggestions')
+                    .select('*')
+                    .eq('text', description)
+                    .single();
+
+                if (existing) {
+                    // Update usage count
+                    await supabaseClient
+                        .from('prompt_suggestions')
+                        .update({
+                            usage_count: existing.usage_count + 1,
+                            last_used_at: new Date()
+                        })
+                        .eq('id', existing.id);
+                } else {
+                    // Insert new
+                    await supabaseClient
+                        .from('prompt_suggestions')
+                        .insert({ text: description });
+                }
+
+                // 4. Send to Webhook (N8N)
+                try {
+                    const webhookUrl = 'https://n8n.felpsautomacoes.site/webhook/Saas';
+                    await fetch(webhookUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            user: currentUser,
+                            description: description,
+                            images: uploadedUrls,
+                            timestamp: new Date().toISOString()
+                        })
+                    });
+                    console.log('Webhook sent successfully');
+                } catch (webhookError) {
+                    console.error("Webhook error:", webhookError);
+                    // Don't block success message
+                }
+
+                alert('Arquivos salvos com sucesso!');
+
+                // Reset UI
+                pendingFiles = [];
+                mediaDescInput.value = '';
+                dropZone.innerHTML = `
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>Arraste e solte suas imagens aqui</p>
+                    <span class="small-text">ou clique para selecionar</span>
+                    <input type="file" id="file-upload" multiple accept="image/*" style="display: none;">
+                `;
+                btnSaveMedia.disabled = true;
+
+                // Reload Gallery & Suggetions
+                loadMediaLibrary();
+                loadSuggestions();
+
+            } catch (error) {
+                console.error(error);
+                alert('Erro ao salvar: ' + error.message);
+            } finally {
+                btnSaveMedia.innerHTML = originalText;
+            }
+        });
+    }
+
+    // Load Media Library
+    const loadMediaLibrary = async () => {
+        if (!mediaGallery || !currentUser) return;
+
+        mediaGallery.innerHTML = '<p style="color: var(--text-secondary); text-align: center; width: 100%;">Carregando...</p>';
+
+        const { data, error } = await supabaseClient
+            .from('media_items')
+            .select('*')
+            .eq('user_id', currentUser.id)
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            mediaGallery.innerHTML = '<p>Erro ao carregar galeria.</p>';
+            return;
+        }
+
+        if (data.length === 0) {
+            mediaGallery.innerHTML = '<p style="color: var(--text-secondary); text-align: center; width: 100%;">Nenhuma mídia encontrada. Faça seu primeiro upload!</p>';
+            return;
+        }
+
+        mediaGallery.innerHTML = '';
+        data.forEach(item => {
+            const el = document.createElement('div');
+            el.className = 'media-item';
+            el.innerHTML = `
+                <img src="${item.url}" alt="Media" loading="lazy">
+                <div class="media-overlay">
+                    <p>${item.description}</p>
+                </div>
+            `;
+            mediaGallery.appendChild(el);
+        });
+    };
+
+    // Load Suggestions
+    const loadSuggestions = async () => {
+        if (!suggestionsList) return;
+
+        const { data, error } = await supabaseClient
+            .from('prompt_suggestions')
+            .select('text')
+            .order('usage_count', { ascending: false })
+            .limit(20);
+
+        if (!error && data) {
+            suggestionsList.innerHTML = '';
+            data.forEach(item => {
+                const option = document.createElement('option');
+                option.value = item.text;
+                suggestionsList.appendChild(option);
+            });
+        }
+    };
+
     // --- Navigation ---
     const navItems = document.querySelectorAll('.nav-item');
     const views = document.querySelectorAll('.view');
@@ -786,6 +1031,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (targetId === 'ideas') loadSavedTitles();
             // If community, load posts
             if (targetId === 'community') loadCommunityPosts();
+            // If media library, load it
+            if (targetId === 'media-library') {
+                loadMediaLibrary();
+                loadSuggestions();
+            }
 
             navItems.forEach(nav => nav.classList.remove('active'));
             item.classList.add('active');
