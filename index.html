@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solution Hub - Gerador Niilista</title>
+    <!-- Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>Solution<span class="highlight">Hub</span></h2>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-tab="generator">
+                    <i class="fas fa-bolt"></i>
+                    <span>HeadCopy</span>
+                </a>
+                <a href="#" class="nav-item" data-tab="ideas">
+                    <i class="fas fa-lightbulb"></i>
+                    <span>Ideias de Conteúdos</span>
+                </a>
+                <a href="#" class="nav-item" data-tab="community">
+                    <i class="fas fa-users"></i>
+                    <span>Comunidade</span>
+                </a>
+                <a href="#" class="nav-item" data-tab="settings">
+                    <i class="fas fa-cog"></i>
+                    <span>Configurações</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <div class="avatar">U</div>
+                    <div class="user-info">
+                        <span class="name">Usuário</span>
+                        <span class="status">Premium</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+
+            <!-- HeadCopy View (Chat Interface) -->
+            <section id="generator" class="view active">
+                <header class="content-header" style="margin-bottom: 20px;">
+                    <h1>Head<span class="highlight">Copy</span> <span class="badge">Chat V1</span></h1>
+                    <p class="subtitle">Seu assistente Niilista, Cara de Pau e Sem Vergonha.</p>
+                </header>
+
+                <div class="chat-interface">
+                    <div id="chat-history" class="chat-history">
+                        <!-- Initial Greeting -->
+                        <div class="message ai-message">
+                            <div class="message-avatar">HC</div>
+                            <div class="message-content">
+                                <p>Ora, ora... você voltou.</p>
+                                <p>Eu sou o HeadCopy. Não espere gentilezas. Diga-me sobre qual assunto medíocre você
+                                    quer escrever hoje (marketing, coach, venda de curso?) e eu jogarei na sua cara
+                                    algumas headlines que funcionam.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chat-input-area">
+                        <textarea id="chat-input"
+                            placeholder="Ex: Me dê ideias sobre 'Vibecoding' ou 'Marketing Digital'..."
+                            rows="1"></textarea>
+                        <button id="send-btn" class="chat-send-btn">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Community View -->
+            <section id="community" class="view hidden">
+                <div class="community-hero">
+                    <div class="community-badge">
+                        <i class="fas fa-users"></i> Comunidade Exclusiva
+                    </div>
+                    <h1>Comunidade <span class="highlight-teal">VIVER DE IA</span></h1>
+                    <p class="hero-subtitle">Conecte-se, compartilhe conhecimento e construa o futuro da IA junto com
+                        nossa comunidade exclusiva</p>
+
+                    <div class="community-search-container">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="community-search" placeholder="Buscar discussões, tópicos ou membros...">
+                        <button id="btn-new-topic" class="btn-teal">
+                            <i class="fas fa-plus-circle"></i> Criar Tópico
+                        </button>
+                    </div>
+
+                    <div class="community-filters">
+                        <button class="filter-pill active" data-filter="recent">
+                            <i class="fas fa-clock"></i> Recentes
+                        </button>
+                        <button class="filter-pill" data-filter="popular">
+                            <i class="fas fa-chart-line"></i> Populares
+                        </button>
+                        <button class="filter-pill" data-filter="unanswered">
+                            <i class="fas fa-comment-slash"></i> Sem Respostas
+                        </button>
+                    </div>
+                </div>
+
+                <div class="community-content">
+                    <!-- Categories Sidebar/Top -->
+                    <div class="category-tabs">
+                        <div class="cat-tab active" data-cat="all">
+                            <i class="fas fa-comments"></i>
+                            <div>
+                                <span>Todos os Tópicos</span>
+                                <small># Visualização geral</small>
+                            </div>
+                        </div>
+                        <div class="cat-tab" data-cat="Geral">
+                            <i class="fas fa-star"></i>
+                            <div>
+                                <span>Geral</span>
+                                <small>Discussões gerais</small>
+                            </div>
+                        </div>
+                        <div class="cat-tab" data-cat="Suporte">
+                            <i class="fas fa-life-ring"></i>
+                            <div>
+                                <span>Suporte</span>
+                                <small>Ajuda técnica</small>
+                            </div>
+                        </div>
+                        <div class="cat-tab" data-cat="Implementação">
+                            <i class="fas fa-code"></i>
+                            <div>
+                                <span>Implementação</span>
+                                <small>Dicas de dev</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="posts-list-header">
+                        <i class="fas fa-filter" style="color: var(--teal);"></i> Filtrar por:
+                    </div>
+
+                    <div id="posts-container">
+                        <p style="text-align:center; color: var(--text-secondary); margin-top: 40px;">Carregando
+                            discussões...</p>
+                    </div>
+
+                    <!-- Post Details View (Hidden by default) -->
+                    <div id="post-details-view" class="hidden">
+                        <button id="back-to-posts" class="btn-back">
+                            <i class="fas fa-arrow-left"></i> Voltar para tópicos
+                        </button>
+
+                        <div id="selected-post-content">
+                            <!-- Populated by JS -->
+                        </div>
+
+                        <div class="comments-section">
+                            <h3 id="comments-count" style="margin-bottom: 20px;">0 Respostas</h3>
+                            <div id="comments-container">
+                                <!-- Comments will load here -->
+                            </div>
+
+                            <div class="comment-input-area">
+                                <h4>Sua Resposta</h4>
+                                <form id="new-comment-form">
+                                    <textarea id="comment-content" rows="4" required
+                                        placeholder="Escreva sua resposta..."
+                                        style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-light); border-radius: 8px; padding: 15px; color: white; margin-top: 10px; resize: vertical;"></textarea>
+                                    <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
+                                        <button type="submit" class="btn-teal">
+                                            <i class="fas fa-paper-plane"></i> Enviar Resposta
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Saved Ideas View -->
+            <section id="ideas" class="view hidden">
+                <header class="content-header">
+                    <h1>Banco de Ideias</h1>
+                    <p class="subtitle">Seus títulos salvos e histórico de gerações.</p>
+                </header>
+
+                <div id="saved-ideas-grid" class="results-grid">
+                    <p style="color: var(--text-secondary);">Carregando...</p>
+                </div>
+            </section>
+            <!-- Settings View -->
+            <section id="settings" class="view hidden">
+                <header class="content-header">
+                    <h1>Configurações</h1>
+                    <p>Versão 1.0.2 - Conectado ao Supabase</p>
+                </header>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Auth Overlay (Login/Signup) -->
+    <div id="auth-overlay" class="auth-overlay">
+        <div class="auth-box">
+            <div class="auth-header">
+                <h2>Solution<span class="highlight">Hub</span></h2>
+                <p>Acesse sua conta para continuar</p>
+            </div>
+
+            <form id="auth-form">
+                <!-- Login Fields -->
+                <div class="input-group">
+                    <label>Email</label>
+                    <input type="email" id="email" required placeholder="seu@email.com">
+                </div>
+                <div class="input-group">
+                    <label>Senha</label>
+                    <input type="password" id="password" required placeholder="******">
+                </div>
+
+                <!-- Signup Extra Fields (Hidden by default) -->
+                <div id="signup-fields" style="display: none;">
+                    <div class="input-group">
+                        <label>Nome e Sobrenome</label>
+                        <input type="text" id="full-name" placeholder="Ex: João da Silva">
+                    </div>
+                    <div class="input-group">
+                        <label>WhatsApp</label>
+                        <input type="tel" id="phone" placeholder="(11) 99999-9999">
+                    </div>
+                    <div class="input-group">
+                        <label>O que você busca?</label>
+                        <select id="expectations">
+                            <option value="renda-extra">Renda Extra</option>
+                            <option value="carreira">Carreira em IA</option>
+                            <option value="curiosidade">Apenas Curiosidade</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="auth-error" class="error-msg"></div>
+
+                <button type="submit" class="auth-btn">
+                    <span id="auth-btn-text">Entrar</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+
+                <div class="toggle-auth" id="toggle-auth">
+                    Não tem conta? <span class="link">Criar conta</span>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Create Topic Modal -->
+    <div id="new-topic-modal" class="auth-overlay">
+        <div class="auth-box" style="width: 95%; max-width: 600px;">
+            <div class="auth-header">
+                <h2>Criar Novo Tópico</h2>
+                <p>Compartilhe conhecimento com a comunidade</p>
+            </div>
+            <form id="new-topic-form" style="display: flex; flex-direction: column; gap: 15px;">
+                <div class="input-group">
+                    <label>Título</label>
+                    <input type="text" id="topic-title" required placeholder="Ex: Como integrar API do WhatsApp?"
+                        style="background: rgba(0,0,0,0.2); border: 1px solid var(--border-light); padding: 12px; border-radius: 8px; color: white;">
+                </div>
+
+                <div class="input-group">
+                    <label>Categoria</label>
+                    <select id="topic-category"
+                        style="background: rgba(0,0,0,0.2); border: 1px solid var(--border-light); padding: 12px; border-radius: 8px; color: white; width: 100%;">
+                        <option value="Geral">Geral</option>
+                        <option value="Suporte">Suporte</option>
+                        <option value="Implementação">Implementação</option>
+                        <option value="Feedback">Feedback</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label>Conteúdo</label>
+                    <textarea id="topic-content" rows="6" required
+                        placeholder="Descreva sua dúvida ou compartilhamento..."
+                        style="background: rgba(0,0,0,0.2); border: 1px solid var(--border-light); padding: 12px; border-radius: 8px; color: white; width: 100%; font-family: inherit;"></textarea>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+                    <button type="button" id="cancel-topic"
+                        style="background: transparent; border: 1px solid var(--border-light); color: white; padding: 10px 20px; border-radius: 8px; cursor: pointer;">Cancelar</button>
+                    <button type="submit" class="btn-teal" style="padding: 10px 25px;">Publicar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
