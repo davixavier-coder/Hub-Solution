@@ -223,58 +223,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- Content Generator Logic (Updated) ---
 
-    // --- HeadCopy Chat Logic (Advanced Rant Engine) ---
-
-    const rants = [
-        {
-            title: "{topic} e a Audácia do Atropelo",
-            paragraphs: [
-                "{topic} é o maior 'foda-se' que tu pode dar pra quem passou cinco anos numa faculdade pra aprender algo que tu faz em dois segundos com um prompt.",
-                "A malandragem é rir na cara do perigo: tu usa {topic} sem entender metade do que tá ali, mas com a confiança de quem sabe que vai dar certo se a casa cair.",
-                "É a delícia de ser um impostor profissional, entregando soluções com {topic} que parecem coisa de outro planeta enquanto tu só foi o cara de pau que teve coragem de dar o 'Enter'.",
-                "A gente não busca perfeição em {topic}, a gente busca o que funciona e o que fatura, porque código limpo não paga o teu lifestyle de luxo nem a tua cerveja gelada."
-            ]
-        },
-        {
-            title: "{topic} de quem não tem vergonha",
-            paragraphs: [
-                "{topic} é o maior soco na cara do sistema porque tu levanta um projeto inteiro sem precisar ser o gênio que o mercado quer que tu seja.",
-                "É a malandragem de luxo: tu usa {topic} ser o teu braço direito e entrega um trampo que o cliente acha que levou meses, mas tu resolveu enquanto via série no sofá.",
-                "A gente não quer saber de teoria; se a porra do {topic} funciona e o Pix cai na conta, o resto é conversa fiada de quem gosta de sofrer.",
-                "É um prazer doentio ver os puristas chorando porque o {topic} é 'sujo', enquanto tu já tá na fase de gastar o lucro."
-            ]
-        },
-        {
-            title: "O Império da Preguiça Rentável com {topic}",
-            paragraphs: [
-                "{topic} é o teu escravo digital de alta performance que não pede aumento, não reclama e ainda faz tu parecer um gênio pros teus clientes otários.",
-                "A sem-vergonhice aqui é o padrão: tu pega uma ideia bosta de {topic}, dá um tapa e vende como se fosse a última maravilha tecnológica da humanidade.",
-                "A gente não usa {topic} pra 'evoluir a espécie', a gente usa pra automatizar o tédio e transformar tempo livre em saldo positivo na conta corrente.",
-                "No fundo, a gente é tudo um bando de preguiçoso esperto que descobriu que é muito melhor ser o mestre do {topic} do que ser escravo do sistema."
-            ]
-        },
-        {
-            title: "Niilismo pra quem quer lucrar com {topic}",
-            paragraphs: [
-                "O mundo tá girando rápido demais pra tu se preocupar com ética em {topic}: o negócio é garantir o teu agora, porque amanhã tudo pode mudar.",
-                "Nada disso vai durar, então seja o cara mais sem vergonha no {topic}, ganhe o máximo que puder e viva a vida como se o servidor fosse cair a qualquer segundo.",
-                "Aproveita a bagunça desse mercado de {topic} pra subir no topo, porque lá de cima o caos é muito mais bonito de se ver enquanto tu toma um drink pago com o dinheiro dos lentos."
-            ]
-        }
-    ];
-
-    const headlines = [
-        "Por que {topic} é a mentira que você conta para dormir em paz",
-        "A ruína de {topic}: Como você está destruindo tudo sem saber",
-        "Ninguém se importa com seu {topic}, e aqui está o porquê",
-        "Lucre alto com {topic} enquanto os idiotas seguem as regras",
-        "O segredo sujo de {topic} que 'eles' não querem que você saiba",
-        "Venda {topic} como um deus, entregue como um mortal",
-        "Como fingir {topic} até que acreditem em você",
-        "Minta sobre {topic} e fique rico rápido",
-        "{topic}: O prazer culposo que ninguém admite",
-        "A sedução oculta em {topic}"
-    ];
+    // --- HeadCopy Chat Logic (Gemini AI Powered) ---
 
     const chatHistory = document.getElementById('chat-history');
     const chatInput = document.getElementById('chat-input');
@@ -286,6 +235,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         msgDiv.className = `message ${sender}-message`;
 
         let avatarText = sender === 'user' ? (currentUser?.user_metadata?.full_name?.charAt(0) || 'U') : 'HC';
+
+        // If sender is AI, text is likely HTML. 
+        // If sender is User, text is plain text (escape it to be safe, but for now innerHTML is used for both for simplicity in this demo context)
 
         msgDiv.innerHTML = `
             <div class="message-avatar">${avatarText}</div>
@@ -317,78 +269,49 @@ document.addEventListener('DOMContentLoaded', async () => {
         chatHistory.appendChild(loadingDiv);
         chatHistory.scrollTop = chatHistory.scrollHeight;
 
-        // Simulate AI Delay
-        setTimeout(() => {
-            const el = document.getElementById(loadingId);
-            if (el) el.remove();
-            generateAIResponse(text);
-        }, 1500);
-    };
+        // Call Edge Function
+        try {
+            const { data, error } = await supabaseClient.functions.invoke('headcopy-chat', {
+                body: { prompt: text }
+            });
 
-    const generateAIResponse = (input) => {
-        // Smart Topic Extraction (Regex)
-        // Removes common prefixes to find the "meat" of the topic
-        let topic = input.toLowerCase();
-        const prefixes = [
-            "fale sobre", "me de ideias de", "me dê ideias de", "ideias para",
-            "quero saber sobre", "o que você acha de", "me diga sobre", "escreva sobre",
-            "titulos para", "headlines para", "copy para", "vibecoding"
-        ];
+            // Remove loading
+            const loadingEl = document.getElementById(loadingId);
+            if (loadingEl) loadingEl.remove();
 
-        // Remove prefixes
-        prefixes.forEach(p => {
-            if (topic.includes(p)) topic = topic.replace(p, "");
-        });
+            if (error) {
+                console.error("Function Error:", error);
+                appendMessage("Erro de conexão com o cérebro da Matrix. Tente de novo.", 'ai');
+                return;
+            }
 
-        topic = topic.trim();
+            // data.result contains the HTML from Gemini
+            const aiResponse = data.result || "Ocorreu um erro ao gerar a resposta.";
 
-        // Formatting the topic for display (Capitalize first letter)
-        const displayTopic = topic.charAt(0).toUpperCase() + topic.slice(1) || "o Vazio";
+            // Append with Save Button appended manually if not present
+            // The AI is instructed to return HTML, but we might want to ensure the Save button exists for specific topics
+            // We can extract topic from input to save it
 
-        // 1. Select a Random Rant Template
-        const randomRant = rants[Math.floor(Math.random() * rants.length)];
+            // Simple extraction for "Save Idea" button context
+            let topic = text.toLowerCase().replace('fale sobre', '').replace('ideias para', '').trim();
+            if (topic.length > 20) topic = "Conversa HeadCopy";
 
-        // 2. Select 3 Random Headlines
-        const shuffledHeadlines = headlines.sort(() => 0.5 - Math.random());
-        const selectedHeadlines = shuffledHeadlines.slice(0, 3);
+            const finalHTML = aiResponse + `
+                <div style="margin-top: 15px; pt-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);">
+                    <button class="btn-save-idea" onclick="saveGeneratedIdea('${topic}')" style="background: transparent; border: 1px solid var(--accent-color); color: var(--accent-color); padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; transition: all 0.2s;">
+                        <i class="fas fa-save"></i> Salvar Ideia
+                    </button>
+                </div>
+            `;
 
-        // 3. Construct the HTML
-        let responseHTML = "";
+            appendMessage(finalHTML, 'ai');
 
-        // Intro (Acidic)
-        const intros = [
-            `Bora, vou injetar mais ácido nessa tua veia de malandro. O papo é pra quem cansou de ser o cara que "estuda" e decidiu ser o cara que "manda".`,
-            `Vou moer no ${displayTopic} agora. O papo é ácido, sem massagem e pra quem tem a cara de pau de usar o sistema a favor do bolso.`,
-            `Ah, ${displayTopic}... Quer ouvir a verdade ou quer um abraço? Vou te dar a verdade, porque abraço não paga boleto.`
-        ];
-        responseHTML += `<p style="margin-bottom: 15px;">${intros[Math.floor(Math.random() * intros.length)]}</p>`;
-
-        // Rant Title
-        responseHTML += `<h3 style="color: var(--accent-color); font-size: 1.1rem; margin-bottom: 10px; font-weight: bold;">${randomRant.title.replace(/{topic}/g, displayTopic)}</h3>`;
-
-        // Rant Paragraphs
-        randomRant.paragraphs.forEach(p => {
-            responseHTML += `<p style="margin-bottom: 10px; line-height: 1.6;">${p.replace(/{topic}/g, `<strong>${displayTopic}</strong>`)}</p>`;
-        });
-
-        // Headlines Section
-        responseHTML += `<br><p style="margin-bottom: 5px; font-weight: bold; color: white;">Ideias Rápidas:</p>`;
-        responseHTML += `<ul style="margin: 5px 0 15px 20px;">`;
-        selectedHeadlines.forEach(h => {
-            responseHTML += `<li style="margin-bottom: 8px;">${h.replace(/{topic}/g, displayTopic)}</li>`;
-        });
-        responseHTML += `</ul>`;
-
-        // Save Button
-        responseHTML += `
-            <div style="margin-top: 10px;">
-                <button class="btn-save-idea" onclick="saveGeneratedIdea('${displayTopic}')" style="background: transparent; border: 1px solid var(--accent-color); color: var(--accent-color); padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s;">
-                    <i class="fas fa-save"></i> Salvar Essa Vibe
-                </button>
-            </div>
-        `;
-
-        appendMessage(responseHTML, 'ai');
+        } catch (err) {
+            console.error("Request Error:", err);
+            const loadingEl = document.getElementById(loadingId);
+            if (loadingEl) loadingEl.remove();
+            appendMessage("Erro crítico no sistema. O servidor explodiu.", 'ai');
+        }
     };
 
     // Listeners
